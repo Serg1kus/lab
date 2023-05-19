@@ -1,3 +1,5 @@
+#
+# Linux/amd64 Syscall convention:
 
 
 .section .data
@@ -18,117 +20,115 @@ movq 8(%rbp), %rdi
 
 movq $1, %rsi
 arg_loop:
-
-    incq %rsi
-
-    movq (%rbp, %rsi, 8), %rdi
-
-    cmpq $0, %rdi
-
-    je env_loop
-
-    pushq %rsi
-    pushq %rdi
-
-    popq %rdi
-
-    popq %rsi
-
-    jmp arg_loop
+  
+  incq %rsi
+  
+  movq (%rbp, %rsi, 8), %rdi
+ 
+  cmpq $0, %rdi
+  
+  je env_loop
+ 
+  pushq %rsi
+  pushq %rdi
+ 
+  popq %rdi
+ 
+  popq %rsi
+ 
+  jmp arg_loop
 
 env_loop:
+  
+  incq %rsi
+  
+  movq (%rbp, %rsi, 8), %rdi
+ 
+  cmpq $0, %rdi
+  
+  je quit_program
 
-    incq %rsi
-
-    movq (%rbp, %rsi, 8), %rdi
-
-    cmpq $0, %rdi
-
-    je quit_program
-
-
-    pushq %rsi
-    pushq %rdi
-
-    popq %rdi
-    call print_string
-    movq $newline, %rdi
-    call print_string
-
-    popq %rsi
-
-    jmp env_loop
+  
+  pushq %rsi
+  pushq %rdi
+  
+  popq %rdi
+  call print_string
+  movq $newline, %rdi
+  call print_string
+  
+  popq %rsi
+  
+  jmp env_loop
 
 quit_program:
-    movq $60, %rax
-    movq $0, %rdi
-    syscall
+  movq $60, %rax 
+  movq $0, %rdi  
+  syscall
 
 .type strlen, @function
 strlen:
-    pushq %rbp
-    movq %rsp, %rbp
+  pushq %rbp           
+  movq %rsp, %rbp     
 
+  
+  movq $0, %rax
 
-    movq $0, %rax
+  
+  movq $0, %rcx
 
+  movb (%rdi), %cl 
 
-    movq $0, %rcx
-
-
-    movb (%rdi), %cl
-
-    cmpb $0, %cl
-    je end_strlen
+  cmpb $0, %cl
+  je end_strlen
 
 strlen_loop:
+ 
+  incq %rax
 
-    incq %rax
+ 
+  incq %rdi
 
+  
+  movb (%rdi), %cl
 
-    incq %rdi
+  
+  cmpb $0, %cl
 
+  
+  je end_strlen
 
-    movb (%rdi), %cl
-
-
-    cmpb $0, %cl
-
-
-    je end_strlen
-
-
-    jmp strlen_loop
+ 
+  jmp strlen_loop
 
 end_strlen:
-    leave
-    ret
+  leave
+  ret
 
-.type print_string, @ function
+.type print_string, @function
 print_string:
-    pushq %rbp
-    movq %rsp, %rbp
+  pushq %rbp            
+  movq %rsp, %rbp       
 
+ 
+  pushq %rdi
 
-    pushq %rdi
+  
+  call strlen
 
+  
+  movq %rax, %rdx
 
-    call strlen
+  
+  popq %rsi
 
+  movq $1, %rax       
+  movq $1, %rdi        
+  
+  syscall
 
-    movq %rax, %rdx
+  
+  movq $0, %rax
 
-
-    popq %rsi
-
-    movq $1, %rax
-    movq $1, %rdi
-
-
-
-
-    movq $0, %rax
-
-    leave
-    ret
-    
+  leave
+  ret
