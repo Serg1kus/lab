@@ -66,7 +66,7 @@ quit_program:
 
 .type strlen, @function
 strlen:
-    pushq $rbp
+    pushq %rbp
     movq %rsp, %rbp
 
 
